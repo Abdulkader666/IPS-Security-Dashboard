@@ -14,7 +14,7 @@ except ImportError:
 # ======================================================
 # مسار ملف لوج Snort — غيّره إذا كان مختلفاً عندك
 # ======================================================
-LOG_FILE = "/var/log/snort/alert"
+LOG_FILE = "/var/log/snort/alert_fast.txt"
 
 
 def classify_attack(message):
