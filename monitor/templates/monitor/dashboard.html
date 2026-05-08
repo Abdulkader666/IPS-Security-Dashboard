@@ -1,4 +1,5 @@
 <!-- monitor/templates/monitor/dashboard.html -->
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -334,33 +335,19 @@ tbody td { padding:11px 16px; font-size:12px; }
 
     <div class="logo-wrap">
       <!-- OORT SEC SVG Logo -->
-      <svg viewBox="0 0 200 200" width="44" height="44" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0">
-        <polygon points="100,8 185,55 185,145 100,192 15,145 15,55"
-          fill="none" stroke="#00ff88" stroke-width="7" stroke-linejoin="round"/>
-        <ellipse cx="100" cy="100" rx="60" ry="26" fill="none" stroke="#00cc66" stroke-width="2.2" transform="rotate(0 100 100)"/>
-        <ellipse cx="100" cy="100" rx="60" ry="26" fill="none" stroke="#00cc66" stroke-width="2.2" transform="rotate(60 100 100)"/>
-        <ellipse cx="100" cy="100" rx="60" ry="26" fill="none" stroke="#00cc66" stroke-width="2.2" transform="rotate(120 100 100)"/>
-        <circle cx="160" cy="100" r="4" fill="#00ff88"/>
-        <circle cx="40"  cy="100" r="4" fill="#00ff88"/>
-        <circle cx="130" cy="55"  r="4" fill="#00ff88"/>
-        <circle cx="70"  cy="55"  r="4" fill="#00ff88"/>
-        <circle cx="130" cy="145" r="4" fill="#00ff88"/>
-        <circle cx="70"  cy="145" r="4" fill="#00ff88"/>
-        <circle cx="100" cy="100" r="21" fill="#0a0a0a" stroke="#00cc66" stroke-width="2"/>
-        <text x="100" y="107" text-anchor="middle"
-          font-family="'Exo 2',sans-serif" font-size="15" font-weight="900" fill="#00ff88">OS</text>
-      </svg>
+     {% load static %}
+    <img src="{% static 'monitor/logo.png' %}" width="46" height="46" style="border-radius:8px">
+        
       <div>
         <div class="logo-name">OORT SEC</div>
-        <div class="logo-sub">IPS Shield v2</div>
+        <div class="logo-sub">IPS Shield</div>
       </div>
     </div>
 
     <a href="/"            class="nav-item active"><div class="nav-dot"></div>Dashboard</a>
-    <a href="#"            class="nav-item"><div class="nav-dot"></div>Active Attacks</a>
-    <a href="#"            class="nav-item"><div class="nav-dot"></div>Log Analysis</a>
-    <a href="#"            class="nav-item"><div class="nav-dot"></div>Snort Config</a>
-    <a href="/api/alerts/" target="_blank" class="nav-item"><div class="nav-dot"></div>API Endpoint</a>
+    
+  
+ 
 
     <div class="sidebar-footer">
       Engine: <span class="val">Snort 3</span><br>
