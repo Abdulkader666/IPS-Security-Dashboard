@@ -1,72 +1,85 @@
 import os
 import json
-import firebase_admin
-from firebase_admin import credentials, firestore
+import requests
+import google.auth
+import google.auth.transport.requests
+from google.oauth2 import service_account
 from django.shortcuts import render
 from django.http import JsonResponse
 
-def initialize_firebase():
-    if not firebase_admin._apps:
-        try:
-            firebase_key = os.environ.get("FIREBASE_KEY")
-            if firebase_key:
-                key_dict = json.loads(firebase_key)
-                cred = credentials.Certificate(key_dict)
-                firebase_admin.initialize_app(cred)
-            else:
-                base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-                cred_path = os.path.join(base_dir, "serviceAccountKey.json")
-                if os.path.exists(cred_path):
-                    cred = credentials.Certificate(cred_path)
-                    firebase_admin.initialize_app(cred)
-        except Exception as e:
-            print(f"Firebase Init Error: {e}")
+# ── توليد Access Token من Service Account ──
+def get_access_token():
+    firebase_key = os.environ.get("FIREBASE_KEY")
+    if not firebase_key:
+        # محلياً من الملف
+        base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        cred_path = os.path.join(base_dir, "serviceAccountKey.json")
+        with open(cred_path) as f:
+            firebase_key = f.read()
+    
+    key_dict = json.loads(firebase_key)
+    creds = service_account.Credentials.from_service_account_info(
+        key_dict,
+        scopes=["https://www.googleapis.com/auth/datastore"]
+    )
+    creds.refresh(google.auth.transport.requests.Request())
+    return creds.token, key_dict["project_id"]
 
 def get_alerts_from_cloud():
     try:
-        initialize_firebase()
-        if not firebase_admin._apps:
+        token, project_id = get_access_token()
+        APP_ID = "ips_dashboard_v1"
+        
+        # ── REST API مباشرة بدل SDK ──
+        url = (
+            f"https://firestore.googleapis.com/v1/"
+            f"projects/{project_id}/databases/(default)/documents/"
+            f"artifacts/{APP_ID}/public/data/snort_alerts"
+            f"?orderBy=timestamp desc&pageSize=20"
+        )
+        
+        resp = requests.get(
+            url,
+            headers={"Authorization": f"Bearer {token}"},
+            timeout=5  # ← 5 ثوانٍ صارمة
+        )
+        
+        if resp.status_code != 200:
+            print(f"Firestore error: {resp.text}")
             return []
         
-        db = firestore.client()
-        APP_ID = "ips_dashboard_v1"
-        collection_path = f"artifacts/{APP_ID}/public/data/snort_alerts"
+        data = resp.json()
+        documents = data.get("documents", [])
         
-        # ── Timeout 5 ثوانٍ بدل ما ينتظر للأبد ──
-        import concurrent.futures
-        def fetch():
-            docs = db.collection(collection_path).order_by(
-                "timestamp", direction=firestore.Query.DESCENDING
-            ).limit(20).stream()
-            alerts = []
-            for doc in docs:
-                data = doc.to_dict()
-                display_time = "N/A"
-                if data.get('timestamp'):
-                    display_time = data['timestamp'].strftime('%Y-%m-%d %H:%M:%S')
-                alerts.append({
-                    "timestamp": display_time,
-                    "type":     data.get("alert_msg", "Unknown Attack"),
-                    "priority": data.get("priority", "High"),
-                    "src":      data.get("attacker_ip", "N/A"),
-                    "dst":      "192.168.159.128",
-                    "status":   "DROPPED",
-                })
-            return alerts
+        alerts = []
+        for doc in documents:
+            fields = doc.get("fields", {})
+            
+            # استخراج الحقول من صيغة Firestore REST
+            timestamp = fields.get("timestamp", {}).get("timestampValue", "N/A")
+            if timestamp != "N/A":
+                timestamp = timestamp[:19].replace("T", " ")
+            
+            alerts.append({
+                "timestamp": timestamp,
+                "type":     fields.get("alert_msg",    {}).get("stringValue", "Unknown Attack"),
+                "priority": fields.get("priority",     {}).get("stringValue", "High"),
+                "src":      fields.get("attacker_ip",  {}).get("stringValue", "N/A"),
+                "dst":      "192.168.159.128",
+                "status":   "DROPPED",
+            })
+        
+        return alerts
 
-        with concurrent.futures.ThreadPoolExecutor() as executor:
-            future = executor.submit(fetch)
-            return future.result(timeout=5)  # ← 5 ثوانٍ كحد أقصى
-
-    except concurrent.futures.TimeoutError:
-        print("Firebase timeout — returning empty")
+    except requests.Timeout:
+        print("Firestore REST timeout")
         return []
     except Exception as e:
         print(f"Fetch Error: {e}")
         return []
 
 def dashboard(request):
-    alerts  = get_alerts_from_cloud()
+    alerts     = get_alerts_from_cloud()
     unique_ips = len(set([a['src'] for a in alerts if a['src'] != 'N/A']))
     context = {
         "alerts":        alerts,
@@ -80,9 +93,8 @@ def dashboard(request):
     }
     return render(request, "monitor/dashboard.html", context)
 
-# ← هذا كان ناقص!
 def api_alerts(request):
-    alerts = get_alerts_from_cloud()
+    alerts     = get_alerts_from_cloud()
     unique_ips = len(set([a['src'] for a in alerts if a['src'] != 'N/A']))
     return JsonResponse({
         "alerts":      alerts,
