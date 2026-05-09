@@ -27,28 +27,40 @@ def get_alerts_from_cloud():
         initialize_firebase()
         if not firebase_admin._apps:
             return []
+        
         db = firestore.client()
         APP_ID = "ips_dashboard_v1"
         collection_path = f"artifacts/{APP_ID}/public/data/snort_alerts"
-        docs = db.collection(collection_path).order_by(
-            "timestamp", direction=firestore.Query.DESCENDING
-        ).limit(20).stream()
+        
+        # ── Timeout 5 ثوانٍ بدل ما ينتظر للأبد ──
+        import concurrent.futures
+        def fetch():
+            docs = db.collection(collection_path).order_by(
+                "timestamp", direction=firestore.Query.DESCENDING
+            ).limit(20).stream()
+            alerts = []
+            for doc in docs:
+                data = doc.to_dict()
+                display_time = "N/A"
+                if data.get('timestamp'):
+                    display_time = data['timestamp'].strftime('%Y-%m-%d %H:%M:%S')
+                alerts.append({
+                    "timestamp": display_time,
+                    "type":     data.get("alert_msg", "Unknown Attack"),
+                    "priority": data.get("priority", "High"),
+                    "src":      data.get("attacker_ip", "N/A"),
+                    "dst":      "192.168.159.128",
+                    "status":   "DROPPED",
+                })
+            return alerts
 
-        alerts = []
-        for doc in docs:
-            data = doc.to_dict()
-            display_time = "N/A"
-            if data.get('timestamp'):
-                display_time = data['timestamp'].strftime('%Y-%m-%d %H:%M:%S')
-            alerts.append({
-                "timestamp": display_time,
-                "type":     data.get("alert_msg", "Unknown Attack"),
-                "priority": data.get("priority", "High"),
-                "src":      data.get("attacker_ip", "N/A"),
-                "dst":      "192.168.159.128",
-                "status":   "DROPPED",
-            })
-        return alerts
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            future = executor.submit(fetch)
+            return future.result(timeout=5)  # ← 5 ثوانٍ كحد أقصى
+
+    except concurrent.futures.TimeoutError:
+        print("Firebase timeout — returning empty")
+        return []
     except Exception as e:
         print(f"Fetch Error: {e}")
         return []
