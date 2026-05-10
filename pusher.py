@@ -2,72 +2,90 @@ import time
 import os
 import firebase_admin
 from firebase_admin import credentials, firestore
-from datetime import datetime
 
-# --- 1. Configuration ---
-KEY_PATH = "serviceAccountKey.json" 
-APP_ID = "ips_dashboard_v1"
+KEY_PATH = "serviceAccountKey.json"
+APP_ID   = "ips_dashboard_v1"
 
 def initialize_firebase():
     try:
         if not firebase_admin._apps:
-            if os.path.exists(KEY_PATH):
-                cred = credentials.Certificate(KEY_PATH)
-                firebase_admin.initialize_app(cred)
-                print("Connected to Firebase Cloud successfully")
-            else:
-                print(f"Error: {KEY_PATH} not found in this directory")
-                return None
+            cred = credentials.Certificate(KEY_PATH)
+            firebase_admin.initialize_app(cred)
+            print("[OORT SEC] ✅ Firebase connected")
         return firestore.client()
     except Exception as e:
-        print(f"Firebase initialization failed: {e}")
+        print(f"[OORT SEC] ❌ Firebase error: {e}")
         return None
 
-# --- 2. Data Upload Logic ---
-def upload_to_cloud(db, alert_data):
+def parse_line(line):
     try:
-        collection_path = f"artifacts/{APP_ID}/public/data/snort_alerts"
-        alert_data['timestamp'] = firestore.SERVER_TIMESTAMP
-        db.collection(collection_path).add(alert_data)
-        print("Alert pushed to global dashboard successfully")
-    except Exception as e:
-        print(f"Cloud upload error: {e}")
+        # ── الوقت ──
+        timestamp = line.split()[0]
 
-# --- 3. Log Monitoring ---
-def monitor_snort_logs():
+        # ── رسالة الهجوم ──
+        # السطر: ... [**] [1:1000002:1] "ICMP Blocked by Snort 3" [**] ...
+        msg = line.split('[**]')[1].strip()
+        if ']' in msg:
+            msg = msg.split(']')[-1].strip().strip('"')
+
+        # ── IP ──
+        src_ip = line.split('->')[0].split()[-1].split(':')[0]
+        dst_ip = line.split('->')[-1].strip().split(':')[0]
+
+        # ── Protocol ──
+        proto = line.split('{')[1].split('}')[0] if '{' in line else 'UNKNOWN'
+
+        # ── Priority ──
+        priority = "High" if "Priority: 1" in line else "Medium"
+
+        return {
+            "alert_msg":   msg,
+            "attacker_ip": src_ip,
+            "dst_ip":      dst_ip,
+            "proto":       proto,
+            "priority":    priority,
+            "raw_log":     line.strip(),
+        }
+    except Exception as e:
+        print(f"[OORT SEC] ⚠ Parse error: {e} | line: {line.strip()[:60]}")
+        return None
+
+def upload_alert(db, data):
+    try:
+        path = f"artifacts/{APP_ID}/public/data/snort_alerts"
+        data['timestamp'] = firestore.SERVER_TIMESTAMP
+        db.collection(path).add(data)
+        print(f"[OORT SEC] ✅ Pushed: {data['alert_msg']} from {data['attacker_ip']}")
+    except Exception as e:
+        print(f"[OORT SEC] ❌ Upload error: {e}")
+
+def monitor():
     db = initialize_firebase()
     if not db:
         return
 
-    log_file_path = "/var/log/snort/alert_fast.txt"
-    
-    if not os.path.exists(log_file_path):
-        print(f"Warning: {log_file_path} not found. Ensure Snort is running.")
-        os.makedirs(os.path.dirname(log_file_path), exist_ok=True)
-        open(log_file_path, 'a').close()
+    log_path = "/var/log/snort/alert_fast.txt"
+    while not os.path.exists(log_path):
+        print(f"[OORT SEC] ⏳ Waiting for {log_path}...")
+        time.sleep(3)
 
-    print(f"Monitoring alerts in {log_file_path}...")
-    
-    with open(log_file_path, "r") as f:
+    print(f"[OORT SEC] 👁  Watching: {log_path}")
+    with open(log_path, "r") as f:
         f.seek(0, os.SEEK_END)
         while True:
             line = f.readline()
             if not line:
                 time.sleep(1)
                 continue
-            
-            if "[**]" in line:
-                parts = line.split()
-                alert_entry = {
-                    "alert_msg": line.split("[**]")[1].split("[**]")[0].strip(),
-                    "priority": "High" if "Priority: 1" in line else "Medium",
-                    "raw_log": line.strip(),
-                    "attacker_ip": parts[-3].split(":")[0] if len(parts) > 3 else "Unknown"
-                }
-                upload_to_cloud(db, alert_entry)
+            if '[**]' not in line:
+                continue
+
+            alert = parse_line(line)
+            if alert:
+                upload_alert(db, alert)
 
 if __name__ == "__main__":
     try:
-        monitor_snort_logs()
+        monitor()
     except KeyboardInterrupt:
-        print("Pusher service stopped")
+        print("\n[OORT SEC] Pusher stopped.")

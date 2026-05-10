@@ -35,7 +35,7 @@ def get_alerts_from_cloud():
             f"https://firestore.googleapis.com/v1/"
             f"projects/{project_id}/databases/(default)/documents/"
             f"artifacts/{APP_ID}/public/data/snort_alerts"
-            f"?orderBy=timestamp desc&pageSize=20"
+            f"?pageSize=20"
         )
         
         resp = requests.get(
