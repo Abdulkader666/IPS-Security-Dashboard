@@ -1,4 +1,6 @@
-streamlit
+django
+gunicorn
 firebase-admin
-pandas
-pillow
+google-auth
+requests
+whitenoisev
