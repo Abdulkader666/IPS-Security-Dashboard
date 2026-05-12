@@ -1,6 +1,6 @@
-django
-gunicorn
-firebase-admin
+django==4.2.11
+gunicorn==21.2.0
+firebase-admin==6.5.0
 google-auth
 requests
-whitenoisev
+whitenoise==6.6.0
