@@ -6,37 +6,14 @@ from google.api_core.exceptions import GoogleAPIError
 from django.shortcuts import render
 from django.http import JsonResponse
 
-# ── Initialize Firebase Admin SDK Robustly ──
+# ── Firebase is initialized in apps.py (Singleton Pattern) ──
 def get_firestore_client():
-    # Prevent "app already exists" error in environments like Railway
-    # which might reload the app or run multiple workers.
-    if not firebase_admin._apps:
-        firebase_key = os.environ.get("FIREBASE_KEY")
-        cred = None
-        
-        if firebase_key:
-            try:
-                # If the key is stored as a JSON string in the environment variable
-                key_dict = json.loads(firebase_key)
-                cred = credentials.Certificate(key_dict)
-            except json.JSONDecodeError:
-                # If it's passed as a file path in the environment variable
-                cred = credentials.Certificate(firebase_key)
-        else:
-            # Fallback to local file
-            base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-            cred_path = os.path.join(base_dir, "serviceAccountKey.json")
-            if os.path.exists(cred_path):
-                cred = credentials.Certificate(cred_path)
-            else:
-                print("[ERROR] No Firebase credentials found.")
-                return None
-                
-        if cred:
-            firebase_admin.initialize_app(cred)
-            print("[INFO] Firebase initialized successfully.")
-            
-    return firestore.client()
+    try:
+        # Get the already initialized client
+        return firestore.client()
+    except ValueError:
+        print("[ERROR] Firestore client not initialized. Ensure apps.py has run.")
+        return None
 
 def get_alerts_from_cloud():
     db = get_firestore_client()
@@ -45,8 +22,16 @@ def get_alerts_from_cloud():
         
     try:
         COLLECTION_PATH = "artifacts/ips_dashboard_v1/public/data/snort_alerts"
-        # Fetching data using the official SDK, ordering by timestamp descending
-        docs = db.collection(COLLECTION_PATH).order_by("timestamp", direction=firestore.Query.DESCENDING).limit(20).stream()
+        # ── Memory Optimization ──
+        # 1. Use .select() to only retrieve the fields we actually need.
+        # 2. Limit to 10 recent documents since dashboard frequently polls and shows limited rows.
+        docs = (
+            db.collection(COLLECTION_PATH)
+            .select(["timestamp", "alert_msg", "priority", "attacker_ip", "dst_ip"])
+            .order_by("timestamp", direction=firestore.Query.DESCENDING)
+            .limit(10)
+            .stream()
+        )
         
         alerts = []
         for doc in docs:
