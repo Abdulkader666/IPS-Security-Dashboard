@@ -2,542 +2,1254 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>OORT SEC — IPS Dashboard</title>
-<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Exo+2:wght@400;600;700;800;900&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<style>
-:root {
-  --bg:        #000000;
-  --bg2:       #0a0a0a;
-  --bg3:       #111111;
-  --bg4:       #161616;
-  --border:    #1c1c1c;
-  --border2:   #2a2a2a;
-  --green:     #00ff88;
-  --green2:    #00cc66;
-  --green-dim: #00ff8810;
-  --green-mid: #00ff8830;
-  --red:       #ff3355;
-  --red-dim:   #ff335518;
-  --amber:     #ffcc00;
-  --blue:      #00ccff;
-  --text:      #e8ffe8;
-  --muted:     #3a6a3a;
-  --muted2:    #1a3a1a;
-}
-* { box-sizing: border-box; margin: 0; padding: 0; }
-body {
-  background: #000000;
-  color: var(--text);
-  font-family: 'Exo 2', sans-serif;
-  min-height: 100vh;
-}
-.mono { font-family: 'Space Mono', monospace; }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OORT SEC — IPS Dashboard</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Exo+2:wght@400;600;700;800;900&display=swap"
+    rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --bg: #000000;
+      --bg2: #0a0a0a;
+      --bg3: #111111;
+      --bg4: #161616;
+      --border: #1c1c1c;
+      --border2: #2a2a2a;
+      --green: #00ff88;
+      --green2: #00cc66;
+      --green-dim: #00ff8810;
+      --green-mid: #00ff8830;
+      --red: #ff3355;
+      --red-dim: #ff335518;
+      --amber: #ffcc00;
+      --blue: #00ccff;
+      --text: #e8ffe8;
+      --muted: #3a6a3a;
+      --muted2: #1a3a1a;
+    }
 
-/* subtle grid overlay */
-body::before {
-  content: '';
-  position: fixed; inset: 0; pointer-events: none; z-index: 0;
-  background-image:
-    linear-gradient(#0f1f0f 1px, transparent 1px),
-    linear-gradient(90deg, #0f1f0f 1px, transparent 1px);
-  background-size: 40px 40px;
-  opacity: 0.6;
-}
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
-.layout {
-  position: relative; z-index: 1;
-  display: grid;
-  grid-template-columns: 230px 1fr;
-  min-height: 100vh;
-}
+    body {
+      background: #000000;
+      color: var(--text);
+      font-family: 'Exo 2', sans-serif;
+      min-height: 100vh;
+    }
 
-/* ══ SIDEBAR ══ */
-.sidebar {
-  background: #000000;
-  border-right: 1px solid var(--border);
-  display: flex; flex-direction: column;
-  padding: 22px 14px; gap: 3px;
-}
+    .mono {
+      font-family: 'Space Mono', monospace;
+    }
 
-.logo-wrap {
-  display: flex; align-items: center; gap: 11px;
-  margin-bottom: 28px; padding: 13px;
-  background: var(--green-dim);
-  border: 1px solid var(--green-mid);
-  border-radius: 13px;
-}
-.logo-name {
-  font-size: 19px; font-weight: 900; letter-spacing: 2px;
-  color: var(--green);
-}
-.logo-sub {
-  font-size: 8px; color: var(--muted);
-  letter-spacing: 3px; text-transform: uppercase; margin-top: 1px;
-  font-family: 'Space Mono', monospace;
-}
+    /* subtle grid overlay */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      background-image:
+        linear-gradient(#0f1f0f 1px, transparent 1px),
+        linear-gradient(90deg, #0f1f0f 1px, transparent 1px);
+      background-size: 40px 40px;
+      opacity: 0.6;
+    }
 
-.nav-item {
-  display: flex; align-items: center; gap: 10px;
-  padding: 9px 13px; border-radius: 9px;
-  font-size: 12px; font-weight: 600; color: var(--muted);
-  transition: all 0.2s; border: 1px solid transparent;
-  text-decoration: none; letter-spacing: 0.3px; cursor: pointer;
-}
-.nav-item:hover { color: var(--green); background: var(--green-dim); }
-.nav-item.active { color: var(--green); background: var(--green-dim); border-color: var(--green-mid); }
-.nav-dot {
-  width: 6px; height: 6px; border-radius: 50%;
-  background: var(--muted2); flex-shrink: 0; transition: all 0.2s;
-}
-.nav-item.active .nav-dot { background: var(--green); box-shadow: 0 0 6px var(--green); }
-.nav-item:hover .nav-dot  { background: var(--green); }
+    .layout {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      grid-template-columns: 230px 1fr;
+      min-height: 100vh;
+    }
 
-.sidebar-footer {
-  margin-top: auto; padding: 13px;
-  background: var(--bg2); border: 1px solid var(--border);
-  border-radius: 11px; font-family: 'Space Mono', monospace;
-  font-size: 9px; color: var(--muted); line-height: 2.1;
-}
-.sidebar-footer .val { color: var(--green); }
-.active-dot {
-  display: inline-block; width: 6px; height: 6px;
-  background: var(--green); border-radius: 50%;
-  box-shadow: 0 0 8px var(--green); margin-right: 5px;
-  animation: glow 2s infinite;
-}
-@keyframes glow {
-  0%,100% { box-shadow: 0 0 5px var(--green); }
-  50%      { box-shadow: 0 0 14px var(--green); }
-}
+    /* ══ SIDEBAR ══ */
+    .sidebar {
+      background: #000000;
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      padding: 22px 14px;
+      gap: 3px;
+    }
 
-/* ══ MAIN ══ */
-.main { display: flex; flex-direction: column; }
+    .logo-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 28px;
+      padding: 20px 10px;
+      background: var(--green-dim);
+      border: 1px solid var(--green-mid);
+      border-radius: 13px;
+      text-align: center;
+    }
 
-.topbar {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 16px 28px; border-bottom: 1px solid var(--border);
-  background: #000000;
-}
-.topbar-title { font-size: 17px; font-weight: 800; letter-spacing: 1px; }
-.topbar-title span { color: var(--green); }
-.topbar-sub { font-size: 10px; color: var(--muted); margin-top: 2px; font-family: 'Space Mono', monospace; }
-.topbar-right { display: flex; align-items: center; gap: 12px; }
+    .logo-name {
+      font-size: 26px;
+      font-weight: 900;
+      letter-spacing: 3px;
+      color: #ffffff;
+      text-shadow: 0 0 10px var(--green);
+    }
 
-.refresh-badge {
-  display: flex; align-items: center; gap: 6px;
-  font-size: 9px; font-family: 'Space Mono', monospace;
-  color: var(--muted); background: var(--bg2);
-  border: 1px solid var(--border2); border-radius: 999px; padding: 5px 12px;
-}
-.refresh-badge span { color: var(--green); font-weight: 700; }
+    .logo-sub {
+      font-size: 10px;
+      color: var(--green);
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      margin-top: 4px;
+      font-family: 'Space Mono', monospace;
+      font-weight: 700;
+    }
 
-.status-pill {
-  display: flex; align-items: center; gap: 7px;
-  background: var(--green-dim); border: 1px solid var(--green-mid);
-  border-radius: 999px; padding: 5px 13px;
-  font-size: 9px; font-weight: 700; color: var(--green);
-  letter-spacing: 1.5px; text-transform: uppercase;
-  font-family: 'Space Mono', monospace;
-}
-.pulse-dot {
-  width: 6px; height: 6px; background: var(--green);
-  border-radius: 50%; animation: pdot 2s infinite;
-}
-@keyframes pdot {
-  0%,100% { opacity:0.5; transform:scale(0.8); }
-  50%      { opacity:1;   transform:scale(1.2); box-shadow: 0 0 8px var(--green); }
-}
-.admin-chip { display:flex; align-items:center; gap:8px; font-size:11px; color:var(--muted); }
-.admin-av {
-  width:28px; height:28px; border-radius:50%;
-  background:var(--bg2); border:1px solid var(--green-mid);
-  display:flex; align-items:center; justify-content:center;
-  font-size:10px; font-weight:700; color:var(--green);
-}
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 13px;
+      border-radius: 9px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--muted);
+      transition: all 0.2s;
+      border: 1px solid transparent;
+      text-decoration: none;
+      letter-spacing: 0.3px;
+      cursor: pointer;
+    }
 
-/* ══ CONTENT ══ */
-.content {
-  flex:1; padding:22px 28px; overflow-y:auto;
-  display:flex; flex-direction:column; gap:18px;
-}
+    .nav-item:hover {
+      color: var(--green);
+      background: var(--green-dim);
+    }
 
-/* Stats */
-.stats-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; }
-.stat-card {
-  background: var(--bg2); border:1px solid var(--border);
-  border-radius:14px; padding:16px; position:relative;
-  overflow:hidden; transition:all 0.2s;
-}
-.stat-card:hover { border-color:var(--border2); transform:translateY(-2px); }
-.stat-card::before {
-  content:''; position:absolute; top:0; left:0; right:0; height:2px;
-}
-.sc-g::before { background: linear-gradient(90deg,var(--green),var(--green2)); }
-.sc-r::before { background: var(--red); }
-.sc-b::before { background: var(--blue); }
-.sc-a::before { background: var(--amber); }
-.stat-ic {
-  width:32px; height:32px; border-radius:8px;
-  display:flex; align-items:center; justify-content:center;
-  font-size:14px; margin-bottom:12px; border:1px solid;
-}
-.si-g { background:var(--green-dim); border-color:var(--green-mid); }
-.si-r { background:var(--red-dim);   border-color:#ff335530; }
-.si-b { background:#00ccff12;        border-color:#00ccff30; }
-.si-a { background:#ffcc0012;        border-color:#ffcc0030; }
-.stat-num   { font-family:'Space Mono',monospace; font-size:28px; font-weight:700; line-height:1; }
-.stat-label { font-size:9px; color:var(--muted); text-transform:uppercase; letter-spacing:2px; margin-top:5px; }
+    .nav-item.active {
+      color: var(--green);
+      background: var(--green-dim);
+      border-color: var(--green-mid);
+    }
 
-/* Mid Grid */
-.mid-grid { display:grid; grid-template-columns:1fr 320px; gap:16px; }
+    .nav-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--muted2);
+      flex-shrink: 0;
+      transition: all 0.2s;
+    }
 
-.card { background:var(--bg2); border:1px solid var(--border); border-radius:16px; overflow:hidden; }
-.card-header {
-  display:flex; align-items:center; justify-content:space-between;
-  padding:14px 18px; border-bottom:1px solid var(--border);
-  background: #000000;
-}
-.card-title { display:flex; align-items:center; gap:8px; font-size:13px; font-weight:700; }
-.card-ic {
-  width:25px; height:25px; border-radius:7px;
-  background:var(--green-dim); border:1px solid var(--green-mid);
-  display:flex; align-items:center; justify-content:center;
-  color:var(--green); font-size:10px;
-}
-.live-badge {
-  background:var(--green-dim); border:1px solid var(--green-mid);
-  color:var(--green); font-size:8px; font-weight:700;
-  letter-spacing:2px; padding:3px 9px; border-radius:999px;
-  text-transform:uppercase; font-family:'Space Mono',monospace;
-}
+    .nav-item.active .nav-dot {
+      background: var(--green);
+      box-shadow: 0 0 6px var(--green);
+    }
 
-/* Table */
-.alerts-scroll { max-height:350px; overflow-y:auto; }
-.alerts-scroll::-webkit-scrollbar { width:3px; }
-.alerts-scroll::-webkit-scrollbar-thumb { background:var(--green-mid); border-radius:3px; }
-table { width:100%; border-collapse:collapse; }
-thead th {
-  padding:9px 16px; text-align:left;
-  font-size:8px; font-weight:700; color:var(--muted);
-  text-transform:uppercase; letter-spacing:2px;
-  background:#000000; position:sticky; top:0; z-index:2;
-  border-bottom:1px solid var(--border);
-}
-tbody tr { border-top:1px solid var(--border); transition:background 0.15s; animation:fadeRow 0.3s ease; }
-@keyframes fadeRow { from{opacity:0;transform:translateX(-5px);}to{opacity:1;} }
-tbody tr:hover { background:var(--green-dim); }
-tbody td { padding:11px 16px; font-size:12px; }
-.ts { color:var(--muted); font-family:'Space Mono',monospace; font-size:10px; }
-.ip { font-family:'Space Mono',monospace; font-size:11px; font-weight:700; }
+    .nav-item:hover .nav-dot {
+      background: var(--green);
+    }
 
-.abadge {
-  display:inline-flex; padding:3px 8px; border-radius:5px;
-  font-size:9px; font-weight:700; letter-spacing:0.5px;
-}
-.b-ssh  { background:#ff335518; color:#ff6677; border:1px solid #ff335528; }
-.b-nmap { background:#ffcc0018; color:#ffd633; border:1px solid #ffcc0028; }
-.b-icmp { background:#00ccff18; color:#33d6ff; border:1px solid #00ccff28; }
-.b-sql  { background:#aa88ff18; color:#bb99ff; border:1px solid #aa88ff28; }
-.b-xss  { background:#ff880018; color:#ffaa33; border:1px solid #ff880028; }
-.b-other{ background:#44444418; color:#888888; border:1px solid #44444428; }
+    .sidebar-footer {
+      margin-top: auto;
+      padding: 13px;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 11px;
+      font-family: 'Space Mono', monospace;
+      font-size: 9px;
+      color: var(--muted);
+      line-height: 2.1;
+    }
 
-.drop-tag { color:var(--green); font-size:10px; font-weight:700; font-family:'Space Mono',monospace; }
-.btn-analyze {
-  width:27px; height:27px; background:var(--green); border:none;
-  border-radius:7px; cursor:pointer; color:#000; font-size:11px;
-  display:flex; align-items:center; justify-content:center; transition:all 0.15s;
-}
-.btn-analyze:hover { transform:scale(1.12); box-shadow:0 0 14px var(--green-mid); }
+    .sidebar-footer .val {
+      color: var(--green);
+    }
 
-/* Side panel */
-.side-panel { display:flex; flex-direction:column; gap:13px; }
-.chart-card,.res-card {
-  background:var(--bg2); border:1px solid var(--border); border-radius:14px; padding:16px;
-}
-.panel-title {
-  font-size:9px; font-weight:700; color:var(--muted);
-  text-transform:uppercase; letter-spacing:2px; margin-bottom:13px;
-  font-family:'Space Mono',monospace;
-}
-.res-row { margin-bottom:13px; }
-.res-row:last-child { margin-bottom:0; }
-.res-lbl { display:flex; justify-content:space-between; font-size:10px; margin-bottom:5px; }
-.res-lbl span:first-child { color:var(--muted); font-family:'Space Mono',monospace; }
-.res-lbl span:last-child  { color:var(--green); font-family:'Space Mono',monospace; font-weight:700; }
-.res-track { height:3px; background:var(--bg4); border-radius:3px; overflow:hidden; }
-.res-fill  { height:100%; background:linear-gradient(90deg,var(--green2),var(--green)); border-radius:3px; transition:width 0.8s; }
+    .active-dot {
+      display: inline-block;
+      width: 6px;
+      height: 6px;
+      background: var(--green);
+      border-radius: 50%;
+      box-shadow: 0 0 8px var(--green);
+      margin-right: 5px;
+      animation: glow 2s infinite;
+    }
 
-/* ══ MODAL ══ */
-.modal-overlay {
-  position:fixed; inset:0; z-index:200;
-  background:rgba(0,0,0,0.94); backdrop-filter:blur(6px);
-  display:none; align-items:center; justify-content:center;
-}
-.modal-overlay.open { display:flex; }
-.modal {
-  background:#0a0a0a; border:1px solid var(--green-mid);
-  border-radius:18px; width:520px; max-width:94vw; overflow:hidden;
-  animation:mUp 0.22s ease;
-  box-shadow: 0 0 50px #00ff8812;
-}
-@keyframes mUp { from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:translateY(0);} }
-.modal-head {
-  background:linear-gradient(135deg,var(--green),var(--green2));
-  padding:17px 20px; display:flex; align-items:center; justify-content:space-between;
-}
-.modal-head h3 { font-size:14px; font-weight:800; color:#000; display:flex; align-items:center; gap:8px; }
-.modal-x { background:none; border:none; color:#000; font-size:15px; cursor:pointer; opacity:0.55; }
-.modal-x:hover { opacity:1; }
-.modal-body { padding:18px; display:flex; flex-direction:column; gap:11px; }
-.msec { background:#000; border:1px solid var(--border); border-radius:10px; padding:13px 15px; }
-.msec-label {
-  font-size:8px; font-weight:700; color:var(--muted);
-  text-transform:uppercase; letter-spacing:2px; margin-bottom:6px;
-  font-family:'Space Mono',monospace;
-}
-.msec-val { font-size:14px; font-weight:700; color:var(--green); }
-.msec-payload { font-family:'Space Mono',monospace; font-size:11px; color:var(--text); line-height:1.8; font-style:italic; }
-.mit-list { list-style:none; }
-.mit-list li { display:flex; align-items:flex-start; gap:9px; font-size:11px; color:var(--text); padding:4px 0; line-height:1.6; }
-.mit-ck {
-  width:15px; height:15px; border-radius:4px;
-  background:var(--green-dim); border:1px solid var(--green-mid);
-  display:flex; align-items:center; justify-content:center;
-  color:var(--green); font-size:8px; flex-shrink:0; margin-top:2px;
-}
-.modal-foot { padding:13px 18px; border-top:1px solid var(--border); display:flex; justify-content:flex-end; }
-.btn-cr {
-  background:var(--bg3); border:1px solid var(--green-mid);
-  color:var(--green); font-family:'Exo 2',sans-serif;
-  font-size:12px; font-weight:700; padding:8px 22px;
-  border-radius:8px; cursor:pointer; transition:all 0.2s;
-}
-.btn-cr:hover { background:var(--green-dim); }
-.modal-loading { text-align:center; padding:28px; color:var(--muted); font-size:12px; font-family:'Space Mono',monospace; }
-.spinner {
-  width:26px; height:26px; border:2px solid var(--border2);
-  border-top-color:var(--green); border-radius:50%;
-  animation:spin 0.65s linear infinite; margin:0 auto 10px;
-}
-@keyframes spin { to{transform:rotate(360deg);} }
-.empty-st { text-align:center; padding:48px 20px; color:var(--muted); font-size:11px; font-family:'Space Mono',monospace; line-height:2; }
-</style>
+    @keyframes glow {
+
+      0%,
+      100% {
+        box-shadow: 0 0 5px var(--green);
+      }
+
+      50% {
+        box-shadow: 0 0 14px var(--green);
+      }
+    }
+
+    /* ══ MAIN ══ */
+    .main {
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ══ TICKER ══ */
+    .ticker-wrap {
+      background: #000000;
+      color: #ffffff;
+      padding: 8px 0;
+      overflow: hidden;
+      border-bottom: 2px solid #550000;
+      display: flex;
+      align-items: center;
+      font-family: 'Space Mono', monospace;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      box-shadow: 0 0 15px rgba(255, 0, 0, 0.4);
+      position: relative;
+      z-index: 10;
+    }
+
+    .ticker-text {
+      white-space: nowrap;
+      animation: ticker 18s linear infinite;
+      color: #bb0000;
+      text-shadow: 0 0 5px #000;
+    }
+
+    @keyframes ticker {
+      0% {
+        transform: translateX(100vw);
+      }
+
+      100% {
+        transform: translateX(-100%);
+      }
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 28px;
+      border-bottom: 1px solid var(--border);
+      background: #000000;
+    }
+
+    .topbar-title {
+      font-size: 17px;
+      font-weight: 800;
+      letter-spacing: 1px;
+    }
+
+    .topbar-title span {
+      color: var(--green);
+    }
+
+    .topbar-sub {
+      font-size: 10px;
+      color: var(--muted);
+      margin-top: 2px;
+      font-family: 'Space Mono', monospace;
+    }
+
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .refresh-badge {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 9px;
+      font-family: 'Space Mono', monospace;
+      color: var(--muted);
+      background: var(--bg2);
+      border: 1px solid var(--border2);
+      border-radius: 999px;
+      padding: 5px 12px;
+    }
+
+    .refresh-badge span {
+      color: var(--green);
+      font-weight: 700;
+    }
+
+    .status-pill {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      background: var(--green-dim);
+      border: 1px solid var(--green-mid);
+      border-radius: 999px;
+      padding: 5px 13px;
+      font-size: 9px;
+      font-weight: 700;
+      color: var(--green);
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      font-family: 'Space Mono', monospace;
+    }
+
+    .pulse-dot {
+      width: 6px;
+      height: 6px;
+      background: var(--green);
+      border-radius: 50%;
+      animation: pdot 2s infinite;
+    }
+
+    @keyframes pdot {
+
+      0%,
+      100% {
+        opacity: 0.5;
+        transform: scale(0.8);
+      }
+
+      50% {
+        opacity: 1;
+        transform: scale(1.2);
+        box-shadow: 0 0 8px var(--green);
+      }
+    }
+
+    .admin-chip {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .admin-av {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: var(--bg2);
+      border: 1px solid var(--green-mid);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--green);
+    }
+
+    /* ══ CONTENT ══ */
+    .content {
+      flex: 1;
+      padding: 22px 28px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    /* Stats */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+    }
+
+    .stat-card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.2s;
+    }
+
+    .stat-card:hover {
+      border-color: var(--border2);
+      transform: translateY(-2px);
+    }
+
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+    }
+
+    .sc-g::before {
+      background: linear-gradient(90deg, var(--green), var(--green2));
+    }
+
+    .sc-r::before {
+      background: var(--red);
+    }
+
+    .sc-b::before {
+      background: var(--blue);
+    }
+
+    .sc-a::before {
+      background: var(--amber);
+    }
+
+    .stat-ic {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      margin-bottom: 12px;
+      border: 1px solid;
+    }
+
+    .si-g {
+      background: var(--green-dim);
+      border-color: var(--green-mid);
+    }
+
+    .si-r {
+      background: var(--red-dim);
+      border-color: #ff335530;
+    }
+
+    .si-b {
+      background: #00ccff12;
+      border-color: #00ccff30;
+    }
+
+    .si-a {
+      background: #ffcc0012;
+      border-color: #ffcc0030;
+    }
+
+    .stat-num {
+      font-family: 'Space Mono', monospace;
+      font-size: 28px;
+      font-weight: 700;
+      line-height: 1;
+    }
+
+    .stat-label {
+      font-size: 9px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin-top: 5px;
+    }
+
+    /* Mid Grid */
+    .mid-grid {
+      display: grid;
+      grid-template-columns: 1fr 320px;
+      gap: 16px;
+    }
+
+    .card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--border);
+      background: #000000;
+    }
+
+    .card-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .card-ic {
+      width: 25px;
+      height: 25px;
+      border-radius: 7px;
+      background: var(--green-dim);
+      border: 1px solid var(--green-mid);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--green);
+      font-size: 10px;
+    }
+
+    .live-badge {
+      background: var(--green-dim);
+      border: 1px solid var(--green-mid);
+      color: var(--green);
+      font-size: 8px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      padding: 3px 9px;
+      border-radius: 999px;
+      text-transform: uppercase;
+      font-family: 'Space Mono', monospace;
+    }
+
+    /* Table */
+    .alerts-scroll {
+      max-height: 350px;
+      overflow-y: auto;
+    }
+
+    .alerts-scroll::-webkit-scrollbar {
+      width: 3px;
+    }
+
+    .alerts-scroll::-webkit-scrollbar-thumb {
+      background: var(--green-mid);
+      border-radius: 3px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    thead th {
+      padding: 9px 16px;
+      text-align: left;
+      font-size: 8px;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      background: #000000;
+      position: sticky;
+      top: 0;
+      z-index: 2;
+      border-bottom: 1px solid var(--border);
+    }
+
+    tbody tr {
+      border-top: 1px solid var(--border);
+      transition: background 0.15s;
+      animation: fadeRow 0.3s ease;
+    }
+
+    @keyframes fadeRow {
+      from {
+        opacity: 0;
+        transform: translateX(-5px);
+      }
+
+      to {
+        opacity: 1;
+      }
+    }
+
+    tbody tr:hover {
+      background: var(--green-dim);
+    }
+
+    tbody td {
+      padding: 11px 16px;
+      font-size: 12px;
+    }
+
+    .ts {
+      color: var(--muted);
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+    }
+
+    .ip {
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .abadge {
+      display: inline-flex;
+      padding: 3px 8px;
+      border-radius: 5px;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+
+    .b-ssh {
+      background: #ff335518;
+      color: #ff6677;
+      border: 1px solid #ff335528;
+    }
+
+    .b-nmap {
+      background: #ffcc0018;
+      color: #ffd633;
+      border: 1px solid #ffcc0028;
+    }
+
+    .b-icmp {
+      background: #00ccff18;
+      color: #33d6ff;
+      border: 1px solid #00ccff28;
+    }
+
+    .b-sql {
+      background: #aa88ff18;
+      color: #bb99ff;
+      border: 1px solid #aa88ff28;
+    }
+
+    .b-xss {
+      background: #ff880018;
+      color: #ffaa33;
+      border: 1px solid #ff880028;
+    }
+
+    .b-other {
+      background: #44444418;
+      color: #888888;
+      border: 1px solid #44444428;
+    }
+
+    .drop-tag {
+      color: var(--green);
+      font-size: 10px;
+      font-weight: 700;
+      font-family: 'Space Mono', monospace;
+    }
+
+    .btn-analyze {
+      width: 27px;
+      height: 27px;
+      background: var(--green);
+      border: none;
+      border-radius: 7px;
+      cursor: pointer;
+      color: #000;
+      font-size: 11px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s;
+    }
+
+    .btn-analyze:hover {
+      transform: scale(1.12);
+      box-shadow: 0 0 14px var(--green-mid);
+    }
+
+    /* Side panel */
+    .side-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 13px;
+    }
+
+    .chart-card,
+    .res-card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px;
+    }
+
+    .panel-title {
+      font-size: 9px;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin-bottom: 13px;
+      font-family: 'Space Mono', monospace;
+    }
+
+    .res-row {
+      margin-bottom: 13px;
+    }
+
+    .res-row:last-child {
+      margin-bottom: 0;
+    }
+
+    .res-lbl {
+      display: flex;
+      justify-content: space-between;
+      font-size: 10px;
+      margin-bottom: 5px;
+    }
+
+    .res-lbl span:first-child {
+      color: var(--muted);
+      font-family: 'Space Mono', monospace;
+    }
+
+    .res-lbl span:last-child {
+      color: var(--green);
+      font-family: 'Space Mono', monospace;
+      font-weight: 700;
+    }
+
+    .res-track {
+      height: 3px;
+      background: var(--bg4);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+
+    .res-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--green2), var(--green));
+      border-radius: 3px;
+      transition: width 0.8s;
+    }
+
+    /* ══ MODAL ══ */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 200;
+      background: rgba(0, 0, 0, 0.94);
+      backdrop-filter: blur(6px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-overlay.open {
+      display: flex;
+    }
+
+    .modal {
+      background: #0a0a0a;
+      border: 1px solid var(--green-mid);
+      border-radius: 18px;
+      width: 520px;
+      max-width: 94vw;
+      overflow: hidden;
+      animation: mUp 0.22s ease;
+      box-shadow: 0 0 50px #00ff8812;
+    }
+
+    @keyframes mUp {
+      from {
+        opacity: 0;
+        transform: translateY(16px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .modal-head {
+      background: linear-gradient(135deg, var(--green), var(--green2));
+      padding: 17px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .modal-head h3 {
+      font-size: 14px;
+      font-weight: 800;
+      color: #000;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .modal-x {
+      background: none;
+      border: none;
+      color: #000;
+      font-size: 15px;
+      cursor: pointer;
+      opacity: 0.55;
+    }
+
+    .modal-x:hover {
+      opacity: 1;
+    }
+
+    .modal-body {
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 11px;
+    }
+
+    .msec {
+      background: #000;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 13px 15px;
+    }
+
+    .msec-label {
+      font-size: 8px;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin-bottom: 6px;
+      font-family: 'Space Mono', monospace;
+    }
+
+    .msec-val {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--green);
+    }
+
+    .msec-payload {
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      color: var(--text);
+      line-height: 1.8;
+      font-style: italic;
+    }
+
+    .mit-list {
+      list-style: none;
+    }
+
+    .mit-list li {
+      display: flex;
+      align-items: flex-start;
+      gap: 9px;
+      font-size: 11px;
+      color: var(--text);
+      padding: 4px 0;
+      line-height: 1.6;
+    }
+
+    .mit-ck {
+      width: 15px;
+      height: 15px;
+      border-radius: 4px;
+      background: var(--green-dim);
+      border: 1px solid var(--green-mid);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--green);
+      font-size: 8px;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .modal-foot {
+      padding: 13px 18px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    .btn-cr {
+      background: var(--bg3);
+      border: 1px solid var(--green-mid);
+      color: var(--green);
+      font-family: 'Exo 2', sans-serif;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 8px 22px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-cr:hover {
+      background: var(--green-dim);
+    }
+
+    .modal-loading {
+      text-align: center;
+      padding: 28px;
+      color: var(--muted);
+      font-size: 12px;
+      font-family: 'Space Mono', monospace;
+    }
+
+    .spinner {
+      width: 26px;
+      height: 26px;
+      border: 2px solid var(--border2);
+      border-top-color: var(--green);
+      border-radius: 50%;
+      animation: spin 0.65s linear infinite;
+      margin: 0 auto 10px;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .empty-st {
+      text-align: center;
+      padding: 48px 20px;
+      color: var(--muted);
+      font-size: 11px;
+      font-family: 'Space Mono', monospace;
+      line-height: 2;
+    }
+
+    /* ══ SPLASH SCREEN ══ */
+    #splash-screen {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      background: #050510;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: opacity 0.8s ease-out, visibility 0.8s ease-out;
+    }
+
+    #splash-screen.hidden {
+      opacity: 0;
+      visibility: hidden;
+    }
+
+    .splash-logo-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      animation: splashScale 1.2s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    }
+
+    .splash-logo {
+      width: 200px;
+      height: 200px;
+      border-radius: 20px;
+      box-shadow: 0 0 0 rgba(0, 255, 136, 0.7);
+      animation: splashPulse 2s infinite;
+      margin-bottom: 25px;
+    }
+
+    .splash-text {
+      font-size: 42px;
+      font-weight: 900;
+      letter-spacing: 8px;
+      color: #ffffff;
+      text-shadow: 0 0 20px var(--green);
+      font-family: 'Exo 2', sans-serif;
+    }
+
+    @keyframes splashScale {
+      0% {
+        transform: scale(0.3);
+        opacity: 0;
+      }
+
+      100% {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+
+    @keyframes splashPulse {
+      0% {
+        box-shadow: 0 0 0 0 rgba(0, 255, 136, 0.7);
+      }
+
+      70% {
+        box-shadow: 0 0 0 40px rgba(0, 255, 136, 0);
+      }
+
+      100% {
+        box-shadow: 0 0 0 0 rgba(0, 255, 136, 0);
+      }
+    }
+  </style>
 </head>
+
 <body>
-<div class="layout">
-
-  <!-- ══ SIDEBAR ══ -->
-  <aside class="sidebar">
-
-    <div class="logo-wrap">
-      <!-- OORT SEC SVG Logo -->
-     {% load static %}
-    <img src="{% static 'monitor/logo.png' %}" width="46" height="46" style="border-radius:8px">
-        
-      <div>
-        <div class="logo-name">OORT SEC</div>
-        <div class="logo-sub">IPS Shield</div>
-      </div>
+  <!-- ══ SPLASH SCREEN ══ -->
+  <div id="splash-screen">
+    <div class="splash-logo-container">
+      {% load static %}
+      <img src="{% static 'monitor/logo.png' %}" class="splash-logo" alt="OortSec Logo">
+      <div class="splash-text">OORT SEC</div>
     </div>
+  </div>
 
-    <a href="/"            class="nav-item active"><div class="nav-dot"></div>Dashboard</a>
-    
-  
- 
+  <div class="layout">
 
-    <div class="sidebar-footer">
-      Engine: <span class="val">Snort 3</span><br>
-      Mode: <span class="val">Inline IPS</span><br>
-      Backend: <span class="val">Django</span><br>
-      Refresh: <span class="val">60s</span><br><br>
-      <span class="active-dot"></span><span class="val">SYSTEM ACTIVE</span>
-    </div>
-  </aside>
+    <!-- ══ SIDEBAR ══ -->
+    <aside class="sidebar">
 
-  <!-- ══ MAIN ══ -->
-  <div class="main">
-    <div class="topbar">
-      <div>
-        <div class="topbar-title">OORT SEC <span>// IPS Monitor</span></div>
-        <div class="topbar-sub">Real-time intrusion detection & prevention</div>
-      </div>
-      <div class="topbar-right">
-        <div class="refresh-badge">↻ REFRESH IN <span id="countdown">60</span>s</div>
-        <div class="status-pill"><div class="pulse-dot"></div>{{ engine_status }}</div>
-        <div class="admin-chip">
-          <div class="admin-av">{{ admin_name|slice:":2"|upper }}</div>
-          <span>{{ admin_name }}</span>
-        </div>
-      </div>
-    </div>
+      <div class="logo-wrap">
+        <!-- OORT SEC SVG Logo -->
+        {% load static %}
+        <img src="{% static 'monitor/logo.png' %}" width="150" height="150"
+          style="border-radius:12px; margin-bottom: 5px;">
 
-    <div class="content">
-
-      <!-- Stat Cards -->
-      <div class="stats-grid">
-        <div class="stat-card sc-g">
-          <div class="stat-ic si-g">🔔</div>
-          <div class="stat-num" id="total-alerts" style="color:var(--green)">{{ total_alerts }}</div>
-          <div class="stat-label">Total Alerts</div>
-        </div>
-        <div class="stat-card sc-r">
-          <div class="stat-ic si-r">🚫</div>
-          <div class="stat-num" id="blocked-count" style="color:var(--red)">{{ blocked_ips }}</div>
-          <div class="stat-label">Blocked IPs</div>
-        </div>
-        <div class="stat-card sc-b">
-          <div class="stat-ic si-b">⚡</div>
-          <div class="stat-num" id="cpu-val" style="color:var(--blue)">{{ cpu }}%</div>
-          <div class="stat-label">CPU Usage</div>
-        </div>
-        <div class="stat-card sc-a">
-          <div class="stat-ic si-a">◈</div>
-          <div class="stat-num" id="ram-val" style="color:var(--amber)">{{ ram }}%</div>
-          <div class="stat-label">RAM Usage</div>
+        <div>
+          <div class="logo-name">OORT SEC</div>
+          <div class="logo-sub">IPS Shield</div>
         </div>
       </div>
 
-      <!-- Table + Side Panel -->
-      <div class="mid-grid">
-        <div class="card">
-          <div class="card-header">
-            <div class="card-title"><div class="card-ic">≡</div>Real-time Intrusion Feed</div>
-            <span class="live-badge">● Live</span>
+      <a href="/" class="nav-item active">
+        <div class="nav-dot"></div>Dashboard
+      </a>
+
+
+
+
+      <div class="sidebar-footer">
+        Engine: <span class="val">Snort 3</span><br>
+        Mode: <span class="val">Inline IPS</span><br>
+        Backend: <span class="val">Django</span><br>
+        Refresh: <span class="val">15s</span><br><br>
+        <span class="active-dot"></span><span class="val">SYSTEM ACTIVE</span>
+      </div>
+    </aside>
+
+    <!-- ══ MAIN ══ -->
+    <div class="main">
+      <div class="ticker-wrap" id="ticker-wrap" {% if not latest_alert %}style="display:none;" {% endif %}>
+        <div class="ticker-text" id="ticker-text">
+          {% if latest_alert %}
+          [CRITICAL] New Attack Detected! Source IP: {{ latest_alert.src }} | Type: {{ latest_alert.type }} | Status:
+          BLOCKED.
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="topbar">
+        <div>
+          <div class="topbar-title">OORT SEC <span>// IPS Monitor</span></div>
+          <div class="topbar-sub">Real-time intrusion detection & prevention</div>
+        </div>
+        <div class="topbar-right">
+          <div class="refresh-badge">↻ REFRESH IN <span id="countdown">15</span>s</div>
+          <div class="status-pill">
+            <div class="pulse-dot"></div>{{ engine_status }}
           </div>
-          <div class="alerts-scroll">
-            <table>
-              <thead>
-                <tr>
-                  <th>Timestamp</th><th>Attacker IP</th>
-                  <th>Attack Type</th><th>Action</th><th>Analyze</th>
-                </tr>
-              </thead>
-              <tbody id="alerts-body">
-                {% for alert in alerts %}
-                <tr>
-                  <td class="ts">{{ alert.timestamp }}</td>
-                  <td class="ip">{{ alert.src }}</td>
-                  <td>
-                    <span class="abadge
+          <div class="admin-chip">
+            <div class="admin-av">{{ admin_name|slice:":2"|upper }}</div>
+            <span>{{ admin_name }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+
+        <!-- Stat Cards -->
+        <div class="stats-grid">
+          <div class="stat-card sc-g">
+            <div class="stat-ic si-g">🔔</div>
+            <div class="stat-num" id="total-alerts" style="color:var(--green)">{{ total_alerts }}</div>
+            <div class="stat-label">Total Alerts</div>
+          </div>
+          <div class="stat-card {{ threat_class }}" id="threat-card">
+            <div class="stat-ic {{ threat_ic_class }}" id="threat-ic">{{ threat_icon }}</div>
+            <div class="stat-num" id="threat-level" style="color:{{ threat_color }}; font-size:22px;">{{ threat_level }}
+            </div>
+            <div class="stat-label">Threat Level</div>
+          </div>
+          <div class="stat-card sc-b">
+            <div class="stat-ic si-b">⚡</div>
+            <div class="stat-num" id="cpu-val" style="color:var(--blue)">{{ cpu }}%</div>
+            <div class="stat-label">CPU Usage</div>
+          </div>
+          <div class="stat-card sc-a">
+            <div class="stat-ic si-a">◈</div>
+            <div class="stat-num" id="ram-val" style="color:var(--amber)">{{ ram }}%</div>
+            <div class="stat-label">RAM Usage</div>
+          </div>
+        </div>
+
+        <!-- Table + Side Panel -->
+        <div class="mid-grid">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">
+                <div class="card-ic">≡</div>Real-time Intrusion Feed
+              </div>
+              <span class="live-badge">● Live</span>
+            </div>
+            <div class="alerts-scroll">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Timestamp</th>
+                    <th>Attacker IP</th>
+                    <th>Attack Type</th>
+                    <th>Action</th>
+                    <th>Analyze</th>
+                  </tr>
+                </thead>
+                <tbody id="alerts-body">
+                  {% for alert in alerts %}
+                  <tr>
+                    <td class="ts">{{ alert.timestamp }}</td>
+                    <td class="ip">{{ alert.src }}</td>
+                    <td>
+                      <span class="abadge
                       {% if 'SSH'  in alert.type %}b-ssh
                       {% elif 'Nmap' in alert.type %}b-nmap
                       {% elif 'ICMP' in alert.type %}b-icmp
                       {% elif 'SQL'  in alert.type %}b-sql
                       {% elif 'XSS'  in alert.type %}b-xss
                       {% else %}b-other{% endif %}">{{ alert.type }}</span>
-                  </td>
-                  <td><span class="drop-tag">⊘ DROP</span></td>
-                  <td>
-                    <button class="btn-analyze"
-                      onclick="openAnalysis('{{ alert.src }}','{{ alert.type }}','{{ alert.timestamp }}')">
-                      🔍
-                    </button>
-                  </td>
-                </tr>
-                {% empty %}
-                <tr><td colspan="5">
-                  <div class="empty-st">◎ SCANNING...<br>No alerts detected.<br>Ensure Snort 3 is running.</div>
-                </td></tr>
-                {% endfor %}
-              </tbody>
-            </table>
+                    </td>
+                    <td><span class="drop-tag">⊘ DROP</span></td>
+                    <td>
+                      <button class="btn-analyze"
+                        onclick="openAnalysis('{{ alert.src }}','{{ alert.type }}','{{ alert.timestamp }}')">
+                        🔍
+                      </button>
+                    </td>
+                  </tr>
+                  {% empty %}
+                  <tr>
+                    <td colspan="5">
+                      <div class="empty-st">◎ SCANNING...<br>No alerts detected.<br>Ensure Snort 3 is running.</div>
+                    </td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="side-panel">
+            <div class="chart-card">
+              <div class="panel-title">Threat Distribution</div>
+              <canvas id="threatChart" height="180"></canvas>
+            </div>
+            <div class="res-card">
+              <div class="panel-title">System Resources</div>
+              <div class="res-row">
+                <div class="res-lbl"><span>CPU</span><span id="cpu-bl">{{ cpu }}%</span></div>
+                <div class="res-track">
+                  <div class="res-fill" id="cpu-bar" style="width:{{ cpu }}%"></div>
+                </div>
+              </div>
+              <div class="res-row">
+                <div class="res-lbl"><span>RAM</span><span id="ram-bl">{{ ram }}%</span></div>
+                <div class="res-track">
+                  <div class="res-fill" id="ram-bar" style="width:{{ ram }}%"></div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
-        <div class="side-panel">
-          <div class="chart-card">
-            <div class="panel-title">Threat Distribution</div>
-            <canvas id="threatChart" height="180"></canvas>
-          </div>
-          <div class="res-card">
-            <div class="panel-title">System Resources</div>
-            <div class="res-row">
-              <div class="res-lbl"><span>CPU</span><span id="cpu-bl">{{ cpu }}%</span></div>
-              <div class="res-track"><div class="res-fill" id="cpu-bar" style="width:{{ cpu }}%"></div></div>
-            </div>
-            <div class="res-row">
-              <div class="res-lbl"><span>RAM</span><span id="ram-bl">{{ ram }}%</span></div>
-              <div class="res-track"><div class="res-fill" id="ram-bar" style="width:{{ ram }}%"></div></div>
-            </div>
-          </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ MODAL ══ -->
+  <div class="modal-overlay" id="modal-overlay">
+    <div class="modal">
+      <div class="modal-head">
+        <h3>
+          <svg viewBox="0 0 200 200" width="20" height="20" xmlns="http://www.w3.org/2000/svg">
+            <polygon points="100,8 185,55 185,145 100,192 15,145 15,55" fill="none" stroke="#000" stroke-width="10" />
+            <ellipse cx="100" cy="100" rx="60" ry="26" fill="none" stroke="#000" stroke-width="3"
+              transform="rotate(0 100 100)" />
+            <ellipse cx="100" cy="100" rx="60" ry="26" fill="none" stroke="#000" stroke-width="3"
+              transform="rotate(60 100 100)" />
+            <ellipse cx="100" cy="100" rx="60" ry="26" fill="none" stroke="#000" stroke-width="3"
+              transform="rotate(120 100 100)" />
+            <circle cx="100" cy="100" r="20" fill="#00cc60" />
+            <text x="100" y="106" text-anchor="middle" font-size="14" font-weight="900" fill="#000"
+              font-family="sans-serif">OS</text>
+          </svg>
+          Threat Intelligence Analysis
+        </h3>
+        <button class="modal-x" onclick="closeModal()">✕</button>
+      </div>
+      <div class="modal-body" id="modal-body">
+        <div class="modal-loading">
+          <div class="spinner"></div>Analyzing threat...
         </div>
       </div>
-
+      <div class="modal-foot">
+        <button class="btn-cr" onclick="closeModal()">Close Report</button>
+      </div>
     </div>
   </div>
-</div>
 
-<!-- ══ MODAL ══ -->
-<div class="modal-overlay" id="modal-overlay">
-  <div class="modal">
-    <div class="modal-head">
-      <h3>
-        <svg viewBox="0 0 200 200" width="20" height="20" xmlns="http://www.w3.org/2000/svg">
-          <polygon points="100,8 185,55 185,145 100,192 15,145 15,55" fill="none" stroke="#000" stroke-width="10"/>
-          <ellipse cx="100" cy="100" rx="60" ry="26" fill="none" stroke="#000" stroke-width="3" transform="rotate(0 100 100)"/>
-          <ellipse cx="100" cy="100" rx="60" ry="26" fill="none" stroke="#000" stroke-width="3" transform="rotate(60 100 100)"/>
-          <ellipse cx="100" cy="100" rx="60" ry="26" fill="none" stroke="#000" stroke-width="3" transform="rotate(120 100 100)"/>
-          <circle cx="100" cy="100" r="20" fill="#00cc60"/>
-          <text x="100" y="106" text-anchor="middle" font-size="14" font-weight="900" fill="#000" font-family="sans-serif">OS</text>
-        </svg>
-        Threat Intelligence Analysis
-      </h3>
-      <button class="modal-x" onclick="closeModal()">✕</button>
-    </div>
-    <div class="modal-body" id="modal-body">
-      <div class="modal-loading"><div class="spinner"></div>Analyzing threat...</div>
-    </div>
-    <div class="modal-foot">
-      <button class="btn-cr" onclick="closeModal()">Close Report</button>
-    </div>
-  </div>
-</div>
-
-<script>
-// Chart
-const COLORS = ['#00ff88','#ff3355','#00ccff','#aa88ff','#ff8800','#ffcc00'];
-let chartInst = null;
-function buildChart(data) {
-  const labels = Object.keys(data), values = Object.values(data);
-  if (!labels.length) return;
-  const ctx = document.getElementById('threatChart').getContext('2d');
-  if (chartInst) chartInst.destroy();
-  chartInst = new Chart(ctx, {
-    type: 'doughnut',
-    data: { labels, datasets: [{ data: values, backgroundColor: COLORS.slice(0,labels.length), borderColor:'#000', borderWidth:4 }] },
-    options: {
-      responsive: true, cutout: '70%',
-      plugins: { legend: { position:'bottom', labels:{ color:'#3a6a3a', font:{size:9,family:'Space Mono'}, boxWidth:9, padding:10 } } }
+  <script>
+    // Chart
+    const COLORS = ['#00ff88', '#ff3355', '#00ccff', '#aa88ff', '#ff8800', '#ffcc00'];
+    let chartInst = null;
+    function buildChart(data) {
+      const labels = Object.keys(data), values = Object.values(data);
+      if (!labels.length) return;
+      const ctx = document.getElementById('threatChart').getContext('2d');
+      if (chartInst) chartInst.destroy();
+      chartInst = new Chart(ctx, {
+        type: 'doughnut',
+        data: { labels, datasets: [{ data: values, backgroundColor: COLORS.slice(0, labels.length), borderColor: '#000', borderWidth: 4 }] },
+        options: {
+          responsive: true, cutout: '70%',
+          plugins: { legend: { position: 'bottom', labels: { color: '#3a6a3a', font: { size: 9, family: 'Space Mono' }, boxWidth: 9, padding: 10 } } }
+        }
+      });
     }
-  });
-}
-buildChart({{ type_counts|safe }});
+    buildChart({{ type_counts| safe }});
 
-// Countdown + fetch every 60s
-let countdown = 60;
-const countEl = document.getElementById('countdown');
-setInterval(() => {
-  countdown--;
-  if (countdown <= 0) { countdown = 60; updateDashboard(); }
-  countEl.textContent = countdown;
-}, 1000);
+    // Countdown + fetch every 15s
+    let countdown = 15;
+    const countEl = document.getElementById('countdown');
+    setInterval(() => {
+      countdown--;
+      if (countdown <= 0) { countdown = 15; updateDashboard(); }
+      countEl.textContent = countdown;
+    }, 1000);
 
-function updateDashboard() {
-  fetch('/api/alerts/').then(r=>r.json()).then(data=>{
-    document.getElementById('total-alerts').textContent  = data.total;
-    document.getElementById('blocked-count').textContent = data.blocked_ips;
-    document.getElementById('cpu-val').textContent = data.cpu+'%';
-    document.getElementById('ram-val').textContent = data.ram+'%';
-    document.getElementById('cpu-bl').textContent  = data.cpu+'%';
-    document.getElementById('ram-bl').textContent  = data.ram+'%';
-    document.getElementById('cpu-bar').style.width = data.cpu+'%';
-    document.getElementById('ram-bar').style.width = data.ram+'%';
-    if (data.alerts && data.alerts.length > 0) {
-      document.getElementById('alerts-body').innerHTML = data.alerts.map(a=>`
+    function updateDashboard() {
+      fetch('/api/alerts/').then(r => r.json()).then(data => {
+        document.getElementById('total-alerts').textContent = data.total;
+
+        const tCard = document.getElementById('threat-card');
+        const tIc = document.getElementById('threat-ic');
+        const tLevel = document.getElementById('threat-level');
+        tCard.className = `stat-card ${data.threat_class}`;
+        tIc.className = `stat-ic ${data.threat_ic_class}`;
+        tIc.textContent = data.threat_icon;
+        tLevel.textContent = data.threat_level;
+        tLevel.style.color = data.threat_color;
+
+        if (data.latest_alert) {
+          document.getElementById('ticker-wrap').style.display = 'flex';
+          document.getElementById('ticker-text').textContent = `[CRITICAL] New Attack Detected! Source IP: ${data.latest_alert.src} | Type: ${data.latest_alert.type} | Status: BLOCKED.`;
+        } else {
+          document.getElementById('ticker-wrap').style.display = 'none';
+        }
+
+        document.getElementById('cpu-val').textContent = data.cpu + '%';
+        document.getElementById('ram-val').textContent = data.ram + '%';
+        document.getElementById('cpu-bl').textContent = data.cpu + '%';
+        document.getElementById('ram-bl').textContent = data.ram + '%';
+        document.getElementById('cpu-bar').style.width = data.cpu + '%';
+        document.getElementById('ram-bar').style.width = data.ram + '%';
+        if (data.alerts && data.alerts.length > 0) {
+          document.getElementById('alerts-body').innerHTML = data.alerts.map(a => `
         <tr>
           <td class="ts">${a.timestamp}</td>
           <td class="ip">${a.src}</td>
@@ -545,54 +1257,54 @@ function updateDashboard() {
           <td><span class="drop-tag">⊘ DROP</span></td>
           <td><button class="btn-analyze" onclick="openAnalysis('${a.src}','${a.type}','${a.timestamp}')">🔍</button></td>
         </tr>`).join('');
+        }
+        if (data.type_counts && Object.keys(data.type_counts).length) buildChart(data.type_counts);
+      }).catch(() => { });
     }
-    if (data.type_counts && Object.keys(data.type_counts).length) buildChart(data.type_counts);
-  }).catch(()=>{});
-}
 
-function getBadge(t) {
-  if (t.includes('SSH'))  return 'b-ssh';
-  if (t.includes('Nmap')) return 'b-nmap';
-  if (t.includes('ICMP')) return 'b-icmp';
-  if (t.includes('SQL'))  return 'b-sql';
-  if (t.includes('XSS'))  return 'b-xss';
-  return 'b-other';
-}
+    function getBadge(t) {
+      if (t.includes('SSH')) return 'b-ssh';
+      if (t.includes('Nmap')) return 'b-nmap';
+      if (t.includes('ICMP')) return 'b-icmp';
+      if (t.includes('SQL')) return 'b-sql';
+      if (t.includes('XSS')) return 'b-xss';
+      return 'b-other';
+    }
 
-// Modal
-const THREAT_DB = {
-  'SSH Brute Force': {
-    payload: 'Multiple failed authentication attempts on port 22. Threshold exceeded (>5 attempts/60s). User "root" targeted.',
-    mitigations: ['Permanent IP ban via Fail2Ban.','Disable root SSH login in /etc/ssh/sshd_config.','Enforce key-based authentication only.','Update Snort SSH detection rule.']
-  },
-  'Nmap SYN Scan': {
-    payload: 'SYN packets to multiple ports without completing TCP handshake. Half-open stealth scan confirmed.',
-    mitigations: ['Block source IP via iptables immediately.','Enable connection rate limiting on firewall.','Close all unnecessary open ports.']
-  },
-  'ICMP Ping Probe': {
-    payload: 'High-frequency ICMP Echo Request flood. Likely reconnaissance or DoS precursor activity.',
-    mitigations: ['Block ICMP from source via iptables.','Rate-limit ICMP at firewall level.','Monitor for follow-up scanning.']
-  },
-  'SQL Injection': {
-    payload: 'Malicious SQL payload in HTTP request body. UNION-based injection targeting the database layer.',
-    mitigations: ['Block source IP at WAF level.','Parameterize all database queries.','Review error logs for data exposure.','Update Snort HTTP inspection rules.']
-  },
-  'XSS Attempt': {
-    payload: 'Cross-site scripting payload in GET/POST parameters. Encoded <script> bypass observed.',
-    mitigations: ['Enable strict Content-Security-Policy headers.','Sanitize all user input server-side.','Block source IP at application firewall.']
-  },
-};
-
-function openAnalysis(ip, type, ts) {
-  document.getElementById('modal-overlay').classList.add('open');
-  document.getElementById('modal-body').innerHTML =
-    '<div class="modal-loading"><div class="spinner"></div>Analyzing threat...</div>';
-  setTimeout(() => {
-    const info = THREAT_DB[type] || {
-      payload: `Unknown attack pattern from ${ip}. Manual review recommended.`,
-      mitigations: ['Isolate source IP.','Review Snort logs manually.','Update detection rules.']
+    // Modal
+    const THREAT_DB = {
+      'SSH Brute Force': {
+        payload: 'Multiple failed authentication attempts on port 22. Threshold exceeded (>5 attempts/60s). User "root" targeted.',
+        mitigations: ['Permanent IP ban via Fail2Ban.', 'Disable root SSH login in /etc/ssh/sshd_config.', 'Enforce key-based authentication only.', 'Update Snort SSH detection rule.']
+      },
+      'Nmap SYN Scan': {
+        payload: 'SYN packets to multiple ports without completing TCP handshake. Half-open stealth scan confirmed.',
+        mitigations: ['Block source IP via iptables immediately.', 'Enable connection rate limiting on firewall.', 'Close all unnecessary open ports.']
+      },
+      'ICMP Ping Probe': {
+        payload: 'High-frequency ICMP Echo Request flood. Likely reconnaissance or DoS precursor activity.',
+        mitigations: ['Block ICMP from source via iptables.', 'Rate-limit ICMP at firewall level.', 'Monitor for follow-up scanning.']
+      },
+      'SQL Injection': {
+        payload: 'Malicious SQL payload in HTTP request body. UNION-based injection targeting the database layer.',
+        mitigations: ['Block source IP at WAF level.', 'Parameterize all database queries.', 'Review error logs for data exposure.', 'Update Snort HTTP inspection rules.']
+      },
+      'XSS Attempt': {
+        payload: 'Cross-site scripting payload in GET/POST parameters. Encoded <script> bypass observed.',
+        mitigations: ['Enable strict Content-Security-Policy headers.', 'Sanitize all user input server-side.', 'Block source IP at application firewall.']
+      },
     };
-    document.getElementById('modal-body').innerHTML = `
+
+    function openAnalysis(ip, type, ts) {
+      document.getElementById('modal-overlay').classList.add('open');
+      document.getElementById('modal-body').innerHTML =
+        '<div class="modal-loading"><div class="spinner"></div>Analyzing threat...</div>';
+      setTimeout(() => {
+        const info = THREAT_DB[type] || {
+          payload: `Unknown attack pattern from ${ip}. Manual review recommended.`,
+          mitigations: ['Isolate source IP.', 'Review Snort logs manually.', 'Update detection rules.']
+        };
+        document.getElementById('modal-body').innerHTML = `
       <div class="msec">
         <div class="msec-label">Target Description</div>
         <div class="msec-val">${type}</div>
@@ -607,13 +1319,21 @@ function openAnalysis(ip, type, ts) {
       </div>
       <div class="msec" style="border-color:var(--green-mid)">
         <div class="msec-label">Recommended Mitigation</div>
-        <ul class="mit-list">${info.mitigations.map(m=>`<li><div class="mit-ck">✓</div>${m}</li>`).join('')}</ul>
+        <ul class="mit-list">${info.mitigations.map(m => `<li><div class="mit-ck">✓</div>${m}</li>`).join('')}</ul>
       </div>`;
-  }, 800);
-}
+      }, 800);
+    }
 
-function closeModal() { document.getElementById('modal-overlay').classList.remove('open'); }
-document.getElementById('modal-overlay').addEventListener('click', function(e){ if(e.target===this) closeModal(); });
-</script>
+    function closeModal() { document.getElementById('modal-overlay').classList.remove('open'); }
+    document.getElementById('modal-overlay').addEventListener('click', function (e) { if (e.target === this) closeModal(); });
+
+    // Splash Screen Logic
+    window.addEventListener("load", () => {
+      setTimeout(() => {
+        document.getElementById('splash-screen').classList.add('hidden');
+      }, 3000);
+    });
+  </script>
 </body>
+
 </html>

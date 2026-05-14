@@ -19,23 +19,21 @@ def initialize_firebase():
 
 def parse_line(line):
     try:
-        # ── الوقت ──
+  
         timestamp = line.split()[0]
 
-        # ── رسالة الهجوم ──
-        # السطر: ... [**] [1:1000002:1] "ICMP Blocked by Snort 3" [**] ...
         msg = line.split('[**]')[1].strip()
         if ']' in msg:
             msg = msg.split(']')[-1].strip().strip('"')
 
-        # ── IP ──
+        # IP
         src_ip = line.split('->')[0].split()[-1].split(':')[0]
         dst_ip = line.split('->')[-1].strip().split(':')[0]
 
-        # ── Protocol ──
+        # Protocol
         proto = line.split('{')[1].split('}')[0] if '{' in line else 'UNKNOWN'
 
-        # ── Priority ──
+        # Priority
         priority = "High" if "Priority: 1" in line else "Medium"
 
         return {
